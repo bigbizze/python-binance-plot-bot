@@ -1,0 +1,4 @@
+python-binance
+discord.py
+seaborn
+pandas
