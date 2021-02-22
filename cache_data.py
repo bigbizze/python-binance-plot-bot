@@ -21,7 +21,7 @@ def get_symbol_store(symbols) -> Dict[str, List[TradeInfo]]:
 
 
 def clean_filter(x: TradeInfo):
-    return datetime.now() < x.data.event_time + timedelta(minutes=10)
+    return datetime.now() < x.data.event_time + timedelta(minutes=60)
 
 
 def get_over_interval_filter(interval: datetime):
@@ -65,7 +65,7 @@ def store_manager(symbols: List[str], q_to_store: Queue, q_request_from_store: m
                 # q_pipe_store_to_request.put({"data": [x.objectify() for x in symbol_store[symbol]]})
         except Empty:
             pass
-        if time.time() - last_garbage_clean > 10:
+        if time.time() - last_garbage_clean > 300:
             symbol_store = clean_store(symbol_store)
             last_garbage_clean = time.time()
 

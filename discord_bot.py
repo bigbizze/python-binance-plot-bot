@@ -3,11 +3,15 @@ from datetime import datetime, timedelta
 from multiprocessing.queues import Queue
 import discord
 
+from main import MAX_MINUTES
+
 
 def process_last(last: str):
     try:
         if last.endswith("m"):
             last = int(last.rstrip("m"))
+            if last > MAX_MINUTES:
+                return f"We only store data from the last {MAX_MINUTES} minutes!"
             return datetime.now() - timedelta(minutes=last)
         if last.endswith("s"):
             last = int(last.rstrip("s"))

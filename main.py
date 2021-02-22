@@ -9,6 +9,9 @@ from other import get_symbols
 # from server import historical_data_server
 
 
+MAX_MINUTES = 60
+
+
 def main():
     client = Client()
     queue_pipe_store_to_request = mp.Queue()
