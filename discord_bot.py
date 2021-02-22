@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from multiprocessing.queues import Queue
 import discord
 
-MAX_MINUTES = 60
+MAX_MINUTES = 30
 
 
 def process_last(last: str):
@@ -58,6 +58,7 @@ def discord_bot(
 
     while True:
         try:
+
             @client.event
             async def on_message(message):
                 if message.author == client.user:

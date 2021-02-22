@@ -21,16 +21,12 @@ def get_symbol_store(symbols) -> Dict[str, List[TradeInfo]]:
 
 
 def clean_filter(x: TradeInfo):
-    return datetime.now() < from_timestamp(x.e) + timedelta(minutes=15)
-
-
-def from_timestamp(val: int) -> datetime:
-    return datetime.fromtimestamp(val / 1000)
+    return datetime.now() < x.dt + timedelta(minutes=30)
 
 
 def get_over_interval_filter(interval: datetime):
     def over_interval_filter(x: TradeInfo):
-        return from_timestamp(x.e) > interval
+        return x.dt > interval
     return over_interval_filter
 
 
@@ -41,12 +37,6 @@ def clean_store(symbol_store: Dict[str, List[TradeInfo]]) -> Dict[str, List[Trad
         symbol_store[k] = list(filter(clean_filter, symbol_store[k]))
     print("s: {0}, e: {1}".format(start_len, sum([len(v) for k, v in symbol_store.items()])))
     return symbol_store
-
-
-# def clean_store_for_symbol(trade_info: TradeInfo, symbol_store: Dict[str, List[TradeInfo]]) -> Dict[str, List[TradeInfo]]:
-#     symbol_store[trade_info.s] = list(filter(clean_filter, symbol_store[trade_info.s]))
-#     symbol_store[trade_info.s].append(trade_info)
-#     return symbol_store
 
 
 def store_manager(symbols: List[str], q_to_store: Queue, q_request_from_store: mp.Queue, q_pipe_store_to_request: mp.Queue):
@@ -82,8 +72,12 @@ def store_manager(symbols: List[str], q_to_store: Queue, q_request_from_store: m
 
 
 def get_msg_processor(q_to_store: Queue):
+    # start = datetime.now()
+
     def process_m_message(msg):
         trade = TradeInfo(msg)
+        # next_time = datetime.now()
+        # print("t: {0}".format((next_time - start).seconds))
         q_to_store.put(trade)
     return process_m_message
 
@@ -102,7 +96,7 @@ def timed_data_cache(
     process_m_message = get_msg_processor(queue_to_store)
     # pass a list of stream names
     # noinspection PyTypeChecker
-    bm.start_multiplex_socket(symbol_with_ticker, process_m_message)
+    bm.start_multiplex_socket(list(filter(lambda x: x.startswith("eth"), symbol_with_ticker)), process_m_message)
     bm.start()
 
 
