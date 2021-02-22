@@ -21,25 +21,32 @@ def get_symbol_store(symbols) -> Dict[str, List[TradeInfo]]:
 
 
 def clean_filter(x: TradeInfo):
-    return datetime.now() < x.data.event_time + timedelta(minutes=60)
+    return datetime.now() < datetime.fromtimestamp(x.e) + timedelta(minutes=15)
+
+
+def from_timestamp(val: int) -> datetime:
+    return datetime.fromtimestamp(val / 1000)
 
 
 def get_over_interval_filter(interval: datetime):
     def over_interval_filter(x: TradeInfo):
-        return x.data.event_time > interval
+        return from_timestamp(x.e) > interval
     return over_interval_filter
 
 
 def clean_store(symbol_store: Dict[str, List[TradeInfo]]) -> Dict[str, List[TradeInfo]]:
-    for k, v in symbol_store.items():
+    store_items = symbol_store.items()
+    start_len = sum([len(v) for k, v in store_items])
+    for k, v in store_items:
         symbol_store[k] = list(filter(clean_filter, symbol_store[k]))
+    print("s: {0}, e: {1}".format(start_len, sum([len(v) for k, v in symbol_store.items()])))
     return symbol_store
 
 
-def clean_store_for_symbol(trade_info: TradeInfo, symbol_store: Dict[str, List[TradeInfo]]) -> Dict[str, List[TradeInfo]]:
-    symbol_store[trade_info.data.s] = list(filter(clean_filter, symbol_store[trade_info.data.s]))
-    symbol_store[trade_info.data.s].append(trade_info)
-    return symbol_store
+# def clean_store_for_symbol(trade_info: TradeInfo, symbol_store: Dict[str, List[TradeInfo]]) -> Dict[str, List[TradeInfo]]:
+#     symbol_store[trade_info.s] = list(filter(clean_filter, symbol_store[trade_info.s]))
+#     symbol_store[trade_info.s].append(trade_info)
+#     return symbol_store
 
 
 def store_manager(symbols: List[str], q_to_store: Queue, q_request_from_store: mp.Queue, q_pipe_store_to_request: mp.Queue):
@@ -48,12 +55,13 @@ def store_manager(symbols: List[str], q_to_store: Queue, q_request_from_store: m
         last_garbage_clean = time.time()
         while True:
             try:
-                trade: TradeInfo = q_to_store.get(block=False)
-                symbol_store = clean_store_for_symbol(trade, symbol_store)
+                trade: TradeInfo = q_to_store.get(block=True, timeout=0.1)
+                symbol_store[trade.s].append(trade)
+                # symbol_store = clean_store_for_symbol(trade, symbol_store)
             except Empty:
                 pass
             try:
-                [symbol, interval] = q_request_from_store.get(block=False)
+                [symbol, interval] = q_request_from_store.get(block=True, timeout=0.1)
                 if symbol is not None:
                     symbol_list = symbol_store[symbol]
                     symbol_list = symbol_list if interval is None else list(filter(get_over_interval_filter(interval), symbol_list))
@@ -63,7 +71,6 @@ def store_manager(symbols: List[str], q_to_store: Queue, q_request_from_store: m
                         q_pipe_store_to_request.put(base_64)
                     else:
                         q_pipe_store_to_request.put(None)
-                    # q_pipe_store_to_request.put({"data": [x.objectify() for x in symbol_store[symbol]]})
             except Empty:
                 pass
             if time.time() - last_garbage_clean > 300:
