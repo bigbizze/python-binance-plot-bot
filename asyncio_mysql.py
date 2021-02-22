@@ -61,8 +61,8 @@ class Poolio:
                 if amount is None:
                     return "Bad time given!"
                 await cur.execute(select_statement, (amount,))
-                print(cur.description)
-                return await cur.fetchall()
+                data = await cur.fetchall()
+                return data
 
     async def __aenter__(self):
         self.pool = await aiomysql.create_pool(host=config["host"], port=3306,

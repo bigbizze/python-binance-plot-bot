@@ -97,8 +97,8 @@ def discord_bot(
             try:
                 client.loop.run_until_complete(client.start(token))
             except Exception as e:
-                with open("discord_error.log", "a") as fp:
-                    fp.write(repr(e))
+                # with open("discord_error.log", "a") as fp:
+                #     fp.write(repr(e))
                 handle_exit()
             # client.run(token)
         except Exception as e:
