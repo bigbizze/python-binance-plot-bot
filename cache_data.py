@@ -43,31 +43,35 @@ def clean_store_for_symbol(trade_info: TradeInfo, symbol_store: Dict[str, List[T
 
 
 def store_manager(symbols: List[str], q_to_store: Queue, q_request_from_store: mp.Queue, q_pipe_store_to_request: mp.Queue):
-    symbol_store = get_symbol_store(symbols)
-    last_garbage_clean = time.time()
-    while True:
-        try:
-            trade: TradeInfo = q_to_store.get(block=False)
-            symbol_store = clean_store_for_symbol(trade, symbol_store)
-        except Empty:
-            pass
-        try:
-            [symbol, interval] = q_request_from_store.get(block=False)
-            if symbol is not None:
-                symbol_list = symbol_store[symbol]
-                symbol_list = symbol_list if interval is None else list(filter(get_over_interval_filter(interval), symbol_list))
-                data_frame = pandify_prices(symbol_list)
-                if not data_frame.empty:
-                    base_64 = get_line_plot(symbol, data_frame)
-                    q_pipe_store_to_request.put(base_64)
-                else:
-                    q_pipe_store_to_request.put(None)
-                # q_pipe_store_to_request.put({"data": [x.objectify() for x in symbol_store[symbol]]})
-        except Empty:
-            pass
-        if time.time() - last_garbage_clean > 300:
-            symbol_store = clean_store(symbol_store)
-            last_garbage_clean = time.time()
+    try:
+        symbol_store = get_symbol_store(symbols)
+        last_garbage_clean = time.time()
+        while True:
+            try:
+                trade: TradeInfo = q_to_store.get(block=False)
+                symbol_store = clean_store_for_symbol(trade, symbol_store)
+            except Empty:
+                pass
+            try:
+                [symbol, interval] = q_request_from_store.get(block=False)
+                if symbol is not None:
+                    symbol_list = symbol_store[symbol]
+                    symbol_list = symbol_list if interval is None else list(filter(get_over_interval_filter(interval), symbol_list))
+                    data_frame = pandify_prices(symbol_list)
+                    if not data_frame.empty:
+                        base_64 = get_line_plot(symbol, data_frame)
+                        q_pipe_store_to_request.put(base_64)
+                    else:
+                        q_pipe_store_to_request.put(None)
+                    # q_pipe_store_to_request.put({"data": [x.objectify() for x in symbol_store[symbol]]})
+            except Empty:
+                pass
+            if time.time() - last_garbage_clean > 300:
+                symbol_store = clean_store(symbol_store)
+                last_garbage_clean = time.time()
+    except Exception as e:
+        with open("store_manager_error.log", "a") as fp:
+            fp.write(repr(e))
 
 
 def get_msg_processor(q_to_store: Queue):
