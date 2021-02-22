@@ -21,7 +21,7 @@ def get_symbol_store(symbols) -> Dict[str, List[TradeInfo]]:
 
 
 def clean_filter(x: TradeInfo):
-    return datetime.now() < datetime.fromtimestamp(x.e) + timedelta(minutes=15)
+    return datetime.now() < from_timestamp(x.e) + timedelta(minutes=15)
 
 
 def from_timestamp(val: int) -> datetime:
