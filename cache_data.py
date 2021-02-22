@@ -21,7 +21,7 @@ def get_symbol_store(symbols) -> Dict[str, List[TradeInfo]]:
 
 
 def clean_filter(x: TradeInfo):
-    return datetime.now() < x.data.event_time + timedelta(minutes=60)
+    return datetime.now() < x.data.event_time + timedelta(seconds=5)
 
 
 def get_over_interval_filter(interval: datetime):
