@@ -12,7 +12,7 @@ def get_symbols(client: Optional[Client] = None):
             continue
         symbol = symbol["symbol"].lower()
         symbols.append(symbol)
-        symbol_with_ticker.append(f"{symbol}@aggTrade")
+        symbol_with_ticker.append(f"{symbol}@trade")
     return [symbol_with_ticker, symbols]
 
 

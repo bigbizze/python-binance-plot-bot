@@ -66,7 +66,7 @@ def store_manager(symbols: List[str], q_to_store: Queue, q_request_from_store: m
                     symbol_list = symbol_store[symbol]
                     symbol_list = symbol_list if interval is None else list(filter(get_over_interval_filter(interval), symbol_list))
                     data_frame = pandify_prices(symbol_list)
-                    if not data_frame.empty:
+                    if not data_frame.empty and data_frame.shape[0] > 1:
                         base_64 = get_line_plot(symbol, data_frame)
                         q_pipe_store_to_request.put(base_64)
                     else:
