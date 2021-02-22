@@ -1,4 +1,5 @@
-python-binance
 discord.py
 seaborn
 pandas
+aiomysql
+pymysql
