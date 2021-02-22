@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from multiprocessing.queues import Queue
 import discord
 
-from main import MAX_MINUTES
+MAX_MINUTES = 60
 
 
 def process_last(last: str):
