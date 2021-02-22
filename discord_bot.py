@@ -90,7 +90,7 @@ def discord_bot(
                 with open("discord_error.log", "a") as fp:
                     fp.write(repr(e))
                 handle_exit()
-            client.run(token)
+            # client.run(token)
         except Exception as e:
             with open("discord_error.log", "a") as fp:
                 fp.write(repr(e))

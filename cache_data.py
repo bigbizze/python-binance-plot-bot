@@ -82,22 +82,34 @@ def get_msg_processor(q_to_store: Queue):
     return process_m_message
 
 
-def timed_data_cache(
-        client: Client,
+def ws_socko(
+        queue_to_store: mp.Queue,
         symbol_with_ticker: List[str],
+):
+    process_m_message = get_msg_processor(queue_to_store)
+    client = Client()
+    bm = BinanceSocketManager(client)
+    # pass a list of stream names
+    # noinspection PyTypeChecker
+    bm.start_multiplex_socket(symbol_with_ticker, process_m_message)
+    bm.start()
+
+
+def timed_data_cache(
         symbols: List[str],
+        symbol_with_ticker: List[str],
         queue_request_from_store: mp.Queue,
         queue_pipe_store_to_request: mp.Queue
 ):
-    bm = BinanceSocketManager(client)
     queue_to_store = Queue()
+    num_threads = 5
+    divisor = len(symbol_with_ticker) // num_threads
+    threads: List[Thread] = []
+    for i in range(num_threads):
+        threads.append(Thread(target=ws_socko, args=(queue_to_store, symbol_with_ticker[i * divisor: (i + 1) * divisor])))
+    [x.start() for x in threads]
     t = Thread(target=store_manager, args=(symbols, queue_to_store, queue_request_from_store, queue_pipe_store_to_request,))
     t.start()
-    process_m_message = get_msg_processor(queue_to_store)
-    # pass a list of stream names
-    # noinspection PyTypeChecker
-    bm.start_multiplex_socket(list(filter(lambda x: x.startswith("eth"), symbol_with_ticker)), process_m_message)
-    bm.start()
 
 
 
