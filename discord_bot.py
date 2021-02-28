@@ -69,7 +69,7 @@ def discord_bot(
                     return
                 if not message.content.startswith('.plot'):
                     return
-                if not message.channel.id == 809144516513628250:
+                if message.channel.id != 809144516513628250 or message.channel.id != 807804344845074436:
                     return
                 args = message.content.split(" ")
                 if len(args) < 2:
