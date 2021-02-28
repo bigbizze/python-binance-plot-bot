@@ -12,7 +12,7 @@ def pre_process(symbol, data: Tuple[Tuple[Union[datetime, float]]]):
         trade_info = TradeInfo.new(symbol=symbol, event_time=line[0], price=line[1])
         out_data.append(trade_info)
         log_data += f"\nprice:{trade_info.p}, time:{trade_info.e}\n"
-    with open("/root/data.log", "a", encoding="utf-8") as fp:
+    with open("/data.log", "a", encoding="utf-8") as fp:
         fp.write(f"\n\n{log_data}\n\n")
     return pandify_prices(out_data)
 

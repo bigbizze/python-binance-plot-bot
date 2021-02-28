@@ -8,7 +8,7 @@ from asyncio_mysql import query_stuff
 from plotting import get_line_plot
 from process_data import pre_process
 
-MAX_MINUTES = 30
+MAX_MINUTES = 60 * 12
 
 
 def process_last(last: str):
@@ -68,6 +68,8 @@ def discord_bot(
                 if message.author == client.user:
                     return
                 if not message.content.startswith('.plot'):
+                    return
+                if not message.channel.id == 809144516513628250:
                     return
                 args = message.content.split(" ")
                 if len(args) < 2:
