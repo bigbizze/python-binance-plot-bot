@@ -1,4 +1,4 @@
 # python-binance-plot-bot
 
-takes queries from a discord-bot from users specifying coins on binance and plots their price history
+takes user queries via a discord-bot which specify coins on binance, and then plots their price history and posts the graph to the discord channel where called
 
